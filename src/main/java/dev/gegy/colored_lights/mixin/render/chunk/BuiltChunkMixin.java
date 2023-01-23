@@ -1,60 +1,62 @@
 package dev.gegy.colored_lights.mixin.render.chunk;
 
-import dev.gegy.colored_lights.ColoredLightCorner;
-import dev.gegy.colored_lights.ColoredLightPacking;
-import dev.gegy.colored_lights.render.ColoredLightBuiltChunk;
-import dev.gegy.colored_lights.render.ColoredLightWorldRenderer;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.chunk.ChunkBuilder;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import com.mojang.authlib.minecraft.client.MinecraftClient;
+
+import dev.gegy.colored_lights.ColoredLightCorner;
+import dev.gegy.colored_lights.ColoredLightPacking;
+import dev.gegy.colored_lights.render.ColoredLightBuiltChunk;
+import dev.gegy.colored_lights.render.ColoredLightWorldRenderer;
+import net.minecraft.client.render.chunk.ChunkBuilder;
+
 @Mixin(ChunkBuilder.BuiltChunk.class)
 public class BuiltChunkMixin implements ColoredLightBuiltChunk {
     private int chunkLightGeneration = -1;
     private ColoredLightCorner[] chunkLightColors;
     private long packedChunkLightColors = 0;
-
+    
     @Inject(method = "clear", at = @At("HEAD"))
     private void clear(CallbackInfo ci) {
         this.updateChunkLight(-1, null);
     }
-
+    
     @Inject(method = "cancelRebuild", at = @At("HEAD"))
     private void cancelRebuild(CallbackInfo ci) {
         var client = MinecraftClient.getInstance();
         var worldRenderer = (ColoredLightWorldRenderer) client.worldRenderer;
         var colorUpdater = worldRenderer.getChunkLightColorUpdater();
-
+        
         colorUpdater.updateChunk(client.world, (ChunkBuilder.BuiltChunk) (Object) this);
     }
-
+    
     @Override
     public void updateChunkLight(int generation, ColoredLightCorner[] corners) {
         this.chunkLightGeneration = generation;
         this.chunkLightColors = corners;
-
+        
         if (corners != null) {
             this.packedChunkLightColors = ColoredLightPacking.pack(corners);
         } else {
             this.packedChunkLightColors = ColoredLightPacking.DEFAULT;
         }
     }
-
+    
     @Nullable
     @Override
     public ColoredLightCorner[] getChunkLightColors() {
         return this.chunkLightColors;
     }
-
+    
     @Override
     public long getPackedChunkLightColors() {
         return this.packedChunkLightColors;
     }
-
+    
     @Override
     public int getChunkLightGeneration() {
         return this.chunkLightGeneration;

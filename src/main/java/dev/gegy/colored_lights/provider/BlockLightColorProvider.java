@@ -1,10 +1,11 @@
 package dev.gegy.colored_lights.provider;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.WorldView;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.level.block.state.BlockState;
 
 public interface BlockLightColorProvider {
     @Nullable

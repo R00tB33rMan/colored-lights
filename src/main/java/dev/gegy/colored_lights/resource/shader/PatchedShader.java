@@ -1,7 +1,8 @@
 package dev.gegy.colored_lights.resource.shader;
 
-import net.minecraft.client.gl.GlUniform;
 import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.client.gl.GlUniform;
 
 public interface PatchedShader {
     @Nullable

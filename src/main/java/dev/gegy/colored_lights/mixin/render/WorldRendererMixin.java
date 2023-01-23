@@ -1,6 +1,18 @@
 package dev.gegy.colored_lights.mixin.render;
 
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+
+import com.mojang.blaze3d.shaders.Shader;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexBuffer;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.math.Matrix4f;
+
 import dev.gegy.colored_lights.ColoredLightCorner;
 import dev.gegy.colored_lights.ColoredLights;
 import dev.gegy.colored_lights.mixin.render.chunk.BuiltChunkStorageAccess;
@@ -11,29 +23,18 @@ import dev.gegy.colored_lights.render.ColoredLightEntityRenderContext;
 import dev.gegy.colored_lights.render.ColoredLightReader;
 import dev.gegy.colored_lights.render.ColoredLightWorldRenderer;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
+import net.minecraft.client.Camera;
 import net.minecraft.client.gl.GlUniform;
-import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.BuiltChunkStorage;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.Shader;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.chunk.ChunkBuilder;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Matrix4f;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+import net.minecraft.core.BlockPos;
 
 @Mixin(WorldRenderer.class)
 public class WorldRendererMixin implements ColoredLightWorldRenderer, ColoredLightReader {
@@ -41,88 +42,71 @@ public class WorldRendererMixin implements ColoredLightWorldRenderer, ColoredLig
     private ClientWorld world;
     @Shadow
     private BuiltChunkStorage chunks;
-
+    
     private final ChunkLightColorUpdater chunkLightColorUpdater = new ChunkLightColorUpdater();
-
+    
     private final BlockPos.Mutable readBlockPos = new BlockPos.Mutable();
     private GlUniform chunkLightColors;
-
+    
     private long lastChunkLightColors;
-
+    
     @Inject(method = "scheduleChunkRender", at = @At("HEAD"))
     private void scheduleChunkRender(int x, int y, int z, boolean important, CallbackInfo ci) {
         this.chunkLightColorUpdater.rerenderChunk(this.world, this.chunks, x, y, z);
     }
-
+    
     @Inject(method = "renderLayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/RenderLayer;startDrawing()V", shift = At.Shift.AFTER))
     private void prepareRenderLayer(RenderLayer layer, MatrixStack transform, double cameraX, double cameraY, double cameraZ, Matrix4f projection, CallbackInfo ci) {
         var shader = RenderSystem.getShader();
         this.chunkLightColors = ColoredLights.CHUNK_LIGHT_COLORS.get(shader);
         this.lastChunkLightColors = 0;
     }
-
-    @Inject(
-            method = "renderLayer",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gl/GlUniform;set(FFF)V"),
-            locals = LocalCapture.CAPTURE_FAILHARD
-    )
-    private void prepareRenderChunk(
-            RenderLayer layer, MatrixStack transform, double cameraX, double cameraY, double cameraZ, Matrix4f projection, CallbackInfo ci,
-            boolean opaque, ObjectListIterator<WorldRenderer.ChunkInfo> chunkIterator,
-            VertexFormat vertexFormat, Shader shader, GlUniform chunkOffset, boolean renderedChunk,
-            WorldRenderer.ChunkInfo chunk, ChunkBuilder.BuiltChunk builtChunk, VertexBuffer buffer, BlockPos origin
-    ) {
+    
+    @Inject(method = "renderLayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gl/GlUniform;set(FFF)V"), locals = LocalCapture.CAPTURE_FAILHARD)
+    private void prepareRenderChunk(RenderLayer layer, MatrixStack transform, double cameraX, double cameraY, double cameraZ, Matrix4f projection, CallbackInfo ci, boolean opaque, ObjectListIterator<WorldRenderer.ChunkInfo> chunkIterator, VertexFormat vertexFormat, Shader shader, GlUniform chunkOffset, boolean renderedChunk, WorldRenderer.ChunkInfo chunk, ChunkBuilder.BuiltChunk builtChunk, VertexBuffer buffer, BlockPos origin) {
         var chunkLightColors = this.chunkLightColors;
-        if (chunkLightColors == null) return;
-
+        if (chunkLightColors == null)
+            return;
+        
         long colors = ((ColoredLightBuiltChunk) builtChunk).getPackedChunkLightColors();
         if (this.lastChunkLightColors != colors) {
             this.lastChunkLightColors = colors;
-
+            
             int colorsHigh = (int) (colors >>> 32);
             int colorsLow = (int) colors;
             chunkLightColors.set(colorsHigh, colorsLow);
             chunkLightColors.upload();
         }
     }
-
+    
     @Inject(method = "renderLayer", at = @At("RETURN"))
     private void finishRenderLayer(RenderLayer layer, MatrixStack transform, double cameraX, double cameraY, double cameraZ, Matrix4f projection, CallbackInfo ci) {
         this.lastChunkLightColors = 0;
-
+        
         var chunkLightColors = this.chunkLightColors;
         if (chunkLightColors != null) {
             chunkLightColors.set(0, 0);
         }
     }
-
+    
     @Inject(method = "render", at = @At("INVOKE"))
     private void beforeRender(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f positionMatrix, CallbackInfo ci) {
         float skyBrightness = this.world.getStarBrightness(tickDelta);
         ColoredLightEntityRenderContext.setGlobal(skyBrightness);
     }
-
-    @Inject(
-            method = "renderEntity",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/EntityRenderDispatcher;render(Lnet/minecraft/entity/Entity;DDDFFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V"),
-            locals = LocalCapture.CAPTURE_FAILHARD
-    )
-    private void beforeRenderEntity(
-            Entity entity, double cameraX, double cameraY, double cameraZ,
-            float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, CallbackInfo ci,
-            double entityX, double entityY, double entityZ, float entityYaw
-    ) {
+    
+    @Inject(method = "renderEntity", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/render/entity/EntityRenderDispatcher;render(Lnet/minecraft/entity/Entity;DDDFFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V"),
+            locals = LocalCapture.CAPTURE_FAILHARD)
+    private void beforeRenderEntity(Entity entity, double cameraX, double cameraY, double cameraZ, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, CallbackInfo ci, double entityX, double entityY, double entityZ, float entityYaw) {
         this.read(entityX, entityY, entityZ, ColoredLightEntityRenderContext::set);
     }
-
+    
     @Inject(method = "renderEntity", at = @At("RETURN"))
-    private void afterRenderEntity(
-            Entity entity, double cameraX, double cameraY, double cameraZ,
-            float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, CallbackInfo ci
-    ) {
+    private void afterRenderEntity(Entity entity, double cameraX, double cameraY, double cameraZ, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, CallbackInfo ci) {
         ColoredLightEntityRenderContext.end();
     }
-
+    
     @Override
     public void read(double x, double y, double z, ColorConsumer consumer) {
         var readBlockPos = this.readBlockPos.set(x, y, z);
@@ -130,7 +114,7 @@ public class WorldRendererMixin implements ColoredLightWorldRenderer, ColoredLig
         if (chunk == null) {
             return;
         }
-
+        
         var corners = ((ColoredLightBuiltChunk) chunk).getChunkLightColors();
         if (corners != null) {
             BlockPos origin = chunk.getOrigin();
@@ -140,7 +124,7 @@ public class WorldRendererMixin implements ColoredLightWorldRenderer, ColoredLig
             ColoredLightCorner.mix(corners, localX, localY, localZ, consumer);
         }
     }
-
+    
     @Override
     public ChunkLightColorUpdater getChunkLightColorUpdater() {
         return this.chunkLightColorUpdater;
