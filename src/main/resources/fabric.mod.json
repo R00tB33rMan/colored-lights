@@ -1,24 +1,30 @@
 {
-  "schemaVersion": 1,
-  "id": "colored_lights",
-  "version": "${version}",
-  "name": "Colored Lights",
-  "description": "A compromise solution to colored lighting in Minecraft by tinting based on area.",
-  "authors": ["Gegy"],
-  "license": "LGPLv3",
-  "environment": "client",
-  "entrypoints": {
-    "main": ["dev.gegy.colored_lights.ColoredLights"]
-  },
-  "mixins": ["colored_lights.mixins.json"],
-  "accessWidener": "colored_lights.accesswidener",
-  "depends": {
-    "fabricloader": ">=0.12",
-    "fabric": "*",
-    "minecraft": "1.18.x",
-    "java": ">=17"
-  },
-  "breaks": {
-    "optifabric": "*"
-  }
+    "schemaVersion": 1,
+    "id": "colored_lights",
+    "version": "${version}",
+    "name": "Colored Lights",
+    "description": "A compromise solution to colored lighting in Minecraft by tinting based on area.",
+    "authors": [
+        "Gegy"
+    ],
+    "license": "LGPLv3",
+    "environment": "client",
+    "entrypoints": {
+        "main": [
+            "dev.gegy.colored_lights.ColoredLights"
+        ]
+    },
+    "mixins": [
+        "colored_lights.mixins.json"
+    ],
+    "accessWidener": "colored_lights.accesswidener",
+    "depends": {
+        "fabricloader": ">=0.14.0",
+        "fabric": "*",
+        "minecraft": "1.19.3",
+        "java": ">=17"
+    },
+    "breaks": {
+        "optifabric": "*"
+    }
 }
