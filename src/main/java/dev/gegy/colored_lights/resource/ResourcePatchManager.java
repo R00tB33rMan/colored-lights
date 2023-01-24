@@ -13,6 +13,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.IoSupplier;
 
 public final class ResourcePatchManager {
     public static final ResourcePatchManager INSTANCE = new ResourcePatchManager();
@@ -28,23 +29,22 @@ public final class ResourcePatchManager {
     }
     
     @NotNull
-    public InputStream patch(ResourceLocation id, InputStream input) {
+    public IoSupplier<InputStream> patch(ResourceLocation id, IoSupplier<InputStream> input) {
         var patches = this.patches.get(id);
-        if (patches.isEmpty()) {
+        if (patches.isEmpty())
             return input;
-        }
         
-        try {
-            var bytes = IOUtils.toByteArray(input);
-            for (ResourcePatch patch : patches) {
-                bytes = patch.apply(bytes);
+        return () -> {
+            try {
+                var bytes = IOUtils.toByteArray(input.get());
+                for (ResourcePatch patch : patches)
+                    bytes = patch.apply(bytes);
+                return new ByteArrayInputStream(bytes);
+            } catch (IOException e) {
+                LOGGER.error("Failed to load bytes for patching for resource: '{}'", id, e);
+                return propagateException(e);
             }
-            
-            return new ByteArrayInputStream(bytes);
-        } catch (IOException e) {
-            LOGGER.error("Failed to load bytes for patching for resource: '{}'", id, e);
-            return propagateException(e);
-        }
+        };
     }
     
     private static InputStream propagateException(IOException exception) {

@@ -1,8 +1,7 @@
 package dev.gegy.colored_lights.provider;
 
 import org.jetbrains.annotations.Nullable;
-
-import com.mojang.math.Vector3f;
+import org.joml.Vector3f;
 
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.core.BlockPos;

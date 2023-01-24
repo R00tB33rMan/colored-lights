@@ -3,7 +3,7 @@ package dev.gegy.colored_lights.provider;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.mojang.math.Vector3f;
+import org.joml.Vector3f;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelAccessor;

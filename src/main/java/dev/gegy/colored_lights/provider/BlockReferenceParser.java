@@ -8,7 +8,7 @@ import com.google.gson.JsonSyntaxException;
 import com.mojang.datafixers.util.Either;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -90,7 +90,7 @@ public final class BlockReferenceParser {
     private static Block parseBlock(String reference) {
         if (ResourceLocation.isValidResourceLocation(reference)) {
             var blockId = new ResourceLocation(reference);
-            return Registry.BLOCK.get(blockId);
+            return BuiltInRegistries.BLOCK.get(blockId);
         }
         throw new JsonSyntaxException("Malformed block identifier: " + reference);
     }

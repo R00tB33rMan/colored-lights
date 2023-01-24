@@ -6,10 +6,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
+import org.joml.Vector3f;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import com.mojang.math.Vector3f;
 import com.mojang.realmsclient.util.JsonUtils;
 
 import dev.gegy.colored_lights.ColoredLights;
@@ -52,8 +53,8 @@ public final class BlockLightColorLoader implements SimpleResourceReloadListener
         var baseColors = new BlockLightColorMap();
         var overrideColors = new BlockLightColorMap();
         
-        for (var resource : manager.getResources(new ResourceLocation(ColoredLights.ID, "light_colors.json"))) {
-            try (var input = resource.getInputStream()) {
+        for (var resource : manager.getResourceStack(new ResourceLocation(ColoredLights.ID, "light_colors.json"))) {
+            try (var input = resource.open()) {
                 var root = JsonParser.parseReader(new InputStreamReader(input)).getAsJsonObject();
                 
                 boolean replace = JsonUtils.getBooleanOr("replace", root, false);
@@ -66,7 +67,7 @@ public final class BlockLightColorLoader implements SimpleResourceReloadListener
                     parseColorMappings(mappings, overrideColors);
                 }
             } catch (JsonSyntaxException e) {
-                ColoredLights.LOGGER.error("Failed to parse colored light mappings at {}", resource.getSourceName(), e);
+                ColoredLights.LOGGER.error("Failed to parse colored light mappings at {}", resource.sourcePackId(), e);
             }
         }
         

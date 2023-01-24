@@ -1,6 +1,6 @@
 package dev.gegy.colored_lights;
 
-import com.mojang.math.Vector3f;
+import org.joml.Vector3f;
 
 import dev.gegy.colored_lights.provider.BlockLightColors;
 import net.minecraft.util.Mth;

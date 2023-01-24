@@ -13,26 +13,27 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import dev.gegy.colored_lights.resource.ResourcePatchManager;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.SimpleResource;
+import net.minecraft.server.packs.resources.IoSupplier;
+import net.minecraft.server.packs.resources.Resource;
 
-@Mixin(SimpleResource.class)
-public class SimpleResourceMixin {
-    @Shadow
-    @Final
+@Mixin(Resource.class)
+public class ResourceMixin {
+    
+    @Unique
     private ResourceLocation id;
     @Shadow
     @Final
     @Mutable
-    private InputStream inputStream;
+    private IoSupplier<InputStream> streamSupplier;
     
     @Unique
     private boolean colored_lights$patchedResource;
     
-    @Inject(method = "getInputStream", at = @At("HEAD"), require = 1)
-    private void getInputStream(CallbackInfoReturnable<InputStream> ci) {
+    @Inject(method = "open", at = @At("HEAD"), require = 1)
+    private void getInputStream(CallbackInfoReturnable<IoSupplier<InputStream>> ci) {
         if (!this.colored_lights$patchedResource) {
             this.colored_lights$patchedResource = true;
-            this.inputStream = ResourcePatchManager.INSTANCE.patch(this.id, this.inputStream);
+            this.streamSupplier = ResourcePatchManager.INSTANCE.patch(this.id, this.streamSupplier);
         }
     }
 }
