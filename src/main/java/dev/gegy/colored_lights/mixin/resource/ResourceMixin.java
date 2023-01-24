@@ -11,16 +11,17 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import dev.gegy.colored_lights.resource.ResourceExtention;
 import dev.gegy.colored_lights.resource.ResourcePatchManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.server.packs.resources.Resource;
 
 @Mixin(Resource.class)
-public class ResourceMixin {
+public class ResourceMixin implements ResourceExtention {
     
     @Unique
-    private ResourceLocation id;
+    public ResourceLocation id;
     @Shadow
     @Final
     @Mutable
@@ -35,5 +36,10 @@ public class ResourceMixin {
             this.colored_lights$patchedResource = true;
             this.streamSupplier = ResourcePatchManager.INSTANCE.patch(this.id, this.streamSupplier);
         }
+    }
+    
+    @Override
+    public void setLocation(ResourceLocation location) {
+        this.id = location;
     }
 }

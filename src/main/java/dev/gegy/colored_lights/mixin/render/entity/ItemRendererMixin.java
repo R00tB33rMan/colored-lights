@@ -14,10 +14,10 @@ import net.minecraft.util.Mth;
 
 @Mixin(ItemRenderer.class)
 public class ItemRendererMixin {
-    @Redirect(method = "renderBakedItemQuads", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/render/VertexConsumer;quad(Lnet/minecraft/client/util/math/MatrixStack$Entry;Lnet/minecraft/client/render/model/BakedQuad;FFFII)V"),
+    @Redirect(method = "renderQuadList", at = @At(value = "INVOKE",
+            target = "Lcom/mojang/blaze3d/vertex/VertexConsumer;putBulkData(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lnet/minecraft/client/renderer/block/model/BakedQuad;FFFII)V"),
             require = 1)
-    private void renderQuad(VertexConsumer consumer, PoseStack.Pose transform, BakedQuad quad, float red, float green, float blue, int light, int overlay) {
+    private void renderQuadList(VertexConsumer consumer, PoseStack.Pose transform, BakedQuad quad, float red, float green, float blue, int light, int overlay) {
         var ctx = ColoredLightEntityRenderContext.get();
         if (ctx != null) {
             float factor = ctx.getLightColorFactor(light);

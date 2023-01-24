@@ -1,5 +1,7 @@
 package dev.gegy.colored_lights.mixin.render.particle;
 
+import java.util.Iterator;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -33,16 +35,17 @@ public class ParticleEngineMixin {
     private final ColorConsumer coloredLightSetter = this.coloredParticleVertexConsumer::setLightColor;
     
     @Inject(method = "render", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/particle/ParticleRenderType;begin(Lnet/minecraft/client/render/BufferBuilder;Lnet/minecraft/client/renderer/texture/TextureManager;)V"),
+            target = "Lnet/minecraft/client/particle/ParticleRenderType;begin(Lcom/mojang/blaze3d/vertex/BufferBuilder;Lnet/minecraft/client/renderer/texture/TextureManager;)V"),
             locals = LocalCapture.CAPTURE_FAILHARD, require = 1)
-    private void beforeRenderParticleSheet(PoseStack matrices, BufferSource immediate, LightTexture lightmap, Camera camera, float tickDelta, CallbackInfo ci, PoseStack modelView, ParticleRenderType type, Iterable<Particle> particles, Tesselator tessellator, BufferBuilder bufferBuilder) {
+    private void beforeRenderParticleSheet(PoseStack matrices, BufferSource immediate, LightTexture lightmap, Camera camera, float tickDelta, CallbackInfo ci, PoseStack modelView, Iterator itr, ParticleRenderType type, Iterable<Particle> particles, Tesselator tessellator, BufferBuilder bufferBuilder) {
         
         float skyLight = this.level.getStarBrightness(tickDelta);
         this.coloredParticleVertexConsumer.setup(bufferBuilder, skyLight);
     }
     
-    @Redirect(method = "render", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/particle/Particle;render(Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/client/render/Camera;F)V"), require = 1)
+    @Redirect(method = "render",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;render(Lcom/mojang/blaze3d/vertex/VertexConsumer;Lnet/minecraft/client/Camera;F)V"),
+            require = 1)
     private void renderParticle(Particle particle, VertexConsumer consumer, Camera camera, float tickDelta) {
         var box = particle.getBoundingBox();
         ColoredLightReader.INSTANCE.read(box.minX, box.minY, box.minZ, this.coloredLightSetter);

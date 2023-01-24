@@ -30,15 +30,13 @@ public abstract class ShaderInstanceMixin implements PatchedShader {
     
     private final Map<PatchedUniform, Uniform> patchedUniforms = new Reference2ObjectOpenHashMap<>();
     
-    @Inject(method = "<init>",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/resource/ResourceFactory;getResource(Lnet/minecraft/util/Identifier;)Lnet/minecraft/resource/Resource;"),
-            require = 1)
+    @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/resources/ResourceLocation;<init>"), require = 1)
     private void initEarly(ResourceProvider factory, String name, VertexFormat format, CallbackInfo ci) {
         ShaderPatchManager.startPatching(name);
     }
     
     @Inject(method = "<init>",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Shader;readBlendState(Lcom/google/gson/JsonObject;)Lnet/minecraft/client/gl/GlBlendState;"),
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ShaderInstance;parseBlendNode(Lcom/google/gson/JsonObject;)Lcom/mojang/blaze3d/shaders/BlendMode;"),
             require = 1)
     private void initUniforms(ResourceProvider factory, String name, VertexFormat format, CallbackInfo ci) {
         ShaderPatchManager.applyUniformPatches((Shader) this, (patchedUniform, glUniform) -> {

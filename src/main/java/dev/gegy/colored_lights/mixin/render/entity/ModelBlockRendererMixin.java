@@ -15,7 +15,7 @@ import net.minecraft.util.Mth;
 @Mixin(ModelBlockRenderer.class)
 public class ModelBlockRendererMixin {
     @Redirect(method = "putQuadData", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/render/VertexConsumer;quad(Lnet/minecraft/client/util/math/MatrixStack$Entry;Lnet/minecraft/client/render/model/BakedQuad;[FFFF[IIZ)V"),
+            target = "Lcom/mojang/blaze3d/vertex/VertexConsumer;putBulkData(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lnet/minecraft/client/renderer/block/model/BakedQuad;[FFFF[IIZ)V"),
             require = 1)
     private void renderQuad(VertexConsumer consumer, PoseStack.Pose transform, BakedQuad quad, float[] brightnesses, float red, float green, float blue, int[] lights, int overlay, boolean useQuadColorData) {
         var ctx = ColoredLightEntityRenderContext.get();

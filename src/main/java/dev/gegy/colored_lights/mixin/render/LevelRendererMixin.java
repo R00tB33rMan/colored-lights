@@ -28,9 +28,9 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ViewArea;
 import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher.RenderChunk;
-import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.world.entity.Entity;
@@ -38,7 +38,7 @@ import net.minecraft.world.entity.Entity;
 @Mixin(LevelRenderer.class)
 public class LevelRendererMixin implements ColoredLightLevelRenderer, ColoredLightReader {
     @Shadow
-    private ClientLevel world;
+    private ClientLevel level;
     @Shadow
     private ViewArea viewArea;
     
@@ -49,16 +49,14 @@ public class LevelRendererMixin implements ColoredLightLevelRenderer, ColoredLig
     
     private long lastChunkLightColors;
     
-    @Inject(method = "scheduleChunkRender", at = @At("HEAD"), require = 1)
-    private void scheduleChunkRender(int x, int y, int z, boolean important, CallbackInfo ci) {
-        this.chunkLightColorUpdater.rerenderChunk(this.world, this.viewArea, x, y, z);
+    @Inject(method = "setSectionDirty(IIIZ)V", at = @At("HEAD"), require = 1)
+    private void setSectionDirty(int x, int y, int z, boolean important, CallbackInfo ci) {
+        this.chunkLightColorUpdater.setSectionDirty(this.level, this.viewArea, x, y, z);
     }
     
-    @Inject(method = "renderChunkLayer",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/RenderLayer;setupRenderState()V", shift = At.Shift.AFTER), require = 1)
-    private void prepareRenderLayer(RenderLayer layer, PoseStack transform, double cameraX, double cameraY, double cameraZ, Matrix4f projection, CallbackInfo ci) {
-        var shader = RenderSystem.getShader();
-        this.chunkLightColors = ColoredLights.CHUNK_LIGHT_COLORS.get(shader);
+    @Inject(method = "renderChunkLayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderType;setupRenderState()V", shift = At.Shift.AFTER), require = 1)
+    private void prepareRenderLayer(RenderType renderType, PoseStack poseStack, double d, double e, double f, Matrix4f matrix4f, CallbackInfo ci) {
+        this.chunkLightColors = ColoredLights.CHUNK_LIGHT_COLORS.get(RenderSystem.getShader());
         this.lastChunkLightColors = 0;
     }
     
@@ -81,7 +79,7 @@ public class LevelRendererMixin implements ColoredLightLevelRenderer, ColoredLig
     }
     
     @Inject(method = "renderChunkLayer", at = @At("RETURN"), require = 1)
-    private void finishRenderLayer(RenderLayer layer, PoseStack transform, double cameraX, double cameraY, double cameraZ, Matrix4f projection, CallbackInfo ci) {
+    private void finishRenderLayer(CallbackInfo ci) {
         this.lastChunkLightColors = 0;
         
         var chunkLightColors = this.chunkLightColors;
@@ -90,14 +88,12 @@ public class LevelRendererMixin implements ColoredLightLevelRenderer, ColoredLig
         }
     }
     
-    @Inject(method = "render", at = @At("INVOKE"), require = 1)
+    @Inject(method = "renderLevel", at = @At("HEAD"), require = 1)
     private void beforeRender(PoseStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightmapTextureManager, Matrix4f positionMatrix, CallbackInfo ci) {
-        float skyBrightness = this.world.getStarBrightness(tickDelta);
-        ColoredLightEntityRenderContext.setGlobal(skyBrightness);
+        ColoredLightEntityRenderContext.setGlobal(this.level.getStarBrightness(tickDelta));
     }
     
-    @Inject(method = "renderEntity", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/render/entity/EntityRenderDispatcher;render(Lnet/minecraft/entity/Entity;DDDFFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V"),
+    @Inject(method = "renderEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;render"),
             locals = LocalCapture.CAPTURE_FAILHARD, require = 1)
     private void beforeRenderEntity(Entity entity, double x, double y, double z, float tickDelta, PoseStack poseStack, MultiBufferSource multiBufferSource, CallbackInfo ci, double entityX, double entityY, double entityZ, float entityYaw) {
         this.read(entityX, entityY, entityZ, ColoredLightEntityRenderContext::set);

@@ -16,8 +16,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 @Mixin(BlockEntityRenderDispatcher.class)
 public class BlockEntityRenderDispatcherMixin {
-    @Inject(method = "render(Lnet/minecraft/client/render/block/entity/BlockEntityRenderer;Lnet/minecraft/block/entity/BlockEntity;FLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;)V",
-            at = @At("HEAD"), require = 1)
+    @Inject(method = "setupAndRender", at = @At("HEAD"), require = 1)
     private static <T extends BlockEntity> void beforeRender(BlockEntityRenderer<T> renderer, T entity, float tickDelta, PoseStack matrices, MultiBufferSource consumers, CallbackInfo ci) {
         var pos = entity.getBlockPos();
         double x = pos.getX() + 0.5;
@@ -27,8 +26,7 @@ public class BlockEntityRenderDispatcherMixin {
         ColoredLightReader.INSTANCE.read(x, y, z, ColoredLightEntityRenderContext::set);
     }
     
-    @Inject(method = "render(Lnet/minecraft/client/render/block/entity/BlockEntityRenderer;Lnet/minecraft/block/entity/BlockEntity;FLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;)V",
-            at = @At("RETURN"), require = 1)
+    @Inject(method = "setupAndRender", at = @At("RETURN"), require = 1)
     private static <T extends BlockEntity> void afterRender(BlockEntityRenderer<T> renderer, T entity, float tickDelta, PoseStack matrices, MultiBufferSource consumers, CallbackInfo ci) {
         ColoredLightEntityRenderContext.end();
     }

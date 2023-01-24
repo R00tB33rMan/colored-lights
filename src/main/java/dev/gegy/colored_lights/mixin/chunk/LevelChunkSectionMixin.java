@@ -19,7 +19,7 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 @Mixin(LevelChunkSection.class)
 public abstract class LevelChunkSectionMixin implements ColoredLightChunkSection {
     @Shadow
-    public abstract boolean isEmpty();
+    public abstract boolean hasOnlyAir();
     
     private ColoredLightValue[] coloredLightPoints;
     private int coloredLightGeneration;
@@ -33,8 +33,8 @@ public abstract class LevelChunkSectionMixin implements ColoredLightChunkSection
         }
     }
     
-    @Inject(method = "calculateCounts", at = @At("HEAD"), require = 1)
-    private void calculateCounts(CallbackInfo ci) {
+    @Inject(method = "recalcBlockCounts", at = @At("HEAD"), require = 1)
+    private void recalcBlockCounts(CallbackInfo ci) {
         this.invalidateColoredLight();
     }
     
@@ -45,9 +45,8 @@ public abstract class LevelChunkSectionMixin implements ColoredLightChunkSection
     
     @Override
     public ColoredLightValue getColoredLightPoint(LevelAccessor world, SectionPos sectionPos, int x, int y, int z) {
-        if (this.isEmpty()) {
+        if (this.hasOnlyAir())
             return ColoredLightValue.NO;
-        }
         
         var points = this.coloredLightPoints;
         if (points == null) {

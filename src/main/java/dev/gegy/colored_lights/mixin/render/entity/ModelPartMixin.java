@@ -15,12 +15,13 @@ import net.minecraft.util.Mth;
 @Mixin(ModelPart.class)
 public abstract class ModelPartMixin {
     @Shadow
-    protected abstract void render(PoseStack.Pose entry, VertexConsumer writer, int light, int overlay, float red, float green, float blue, float alpha);
+    protected abstract void render(PoseStack poseStack, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha);
     
-    @Redirect(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;IIFFFF)V", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/model/ModelPart;renderCuboids(Lnet/minecraft/client/util/math/MatrixStack$Entry;Lnet/minecraft/client/render/VertexConsumer;IIFFFF)V"),
+    @Redirect(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/model/geom/ModelPart;render(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V"),
             require = 1)
-    private void render(ModelPart part, PoseStack.Pose entry, VertexConsumer writer, int light, int overlay, float red, float green, float blue, float alpha) {
+    private void render(ModelPart part, PoseStack poseStack, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha) {
         var ctx = ColoredLightEntityRenderContext.get();
         if (ctx != null) {
             float factor = ctx.getLightColorFactor(light);
@@ -29,6 +30,6 @@ public abstract class ModelPartMixin {
             blue *= Mth.lerp(factor, 1.0F, ctx.blue);
         }
         
-        this.render(entry, writer, light, overlay, red, green, blue, alpha);
+        this.render(poseStack, vertexConsumer, light, overlay, red, green, blue, alpha);
     }
 }

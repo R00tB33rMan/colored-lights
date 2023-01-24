@@ -16,7 +16,7 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 public final class ChunkLightColorUpdater {
     private final MutableBlockPos chunkAccessPos = new MutableBlockPos();
     
-    public void rerenderChunk(LevelAccessor world, ViewArea chunks, int x, int y, int z) {
+    public void setSectionDirty(LevelAccessor world, ViewArea chunks, int x, int y, int z) {
         var chunkAccess = (ViewAreaAccess) chunks;
         if (this.isChunkLightOutdated(world, chunkAccess, x, y, z)) {
             for (int dy = -1; dy <= 1; dy++) {
