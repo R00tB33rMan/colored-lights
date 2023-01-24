@@ -17,7 +17,6 @@
     "mixins": [
         "colored_lights.mixins.json"
     ],
-    "accessWidener": "colored_lights.accesswidener",
     "depends": {
         "fabricloader": ">=0.14.0",
         "fabric": "*",
