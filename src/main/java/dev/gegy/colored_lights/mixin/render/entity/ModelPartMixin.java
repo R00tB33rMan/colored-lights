@@ -1,7 +1,6 @@
 package dev.gegy.colored_lights.mixin.render.entity;
 
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
@@ -14,8 +13,6 @@ import net.minecraft.util.Mth;
 
 @Mixin(ModelPart.class)
 public abstract class ModelPartMixin {
-    @Shadow
-    protected abstract void render(PoseStack poseStack, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha);
     
     @Redirect(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V",
             at = @At(value = "INVOKE",
@@ -30,6 +27,6 @@ public abstract class ModelPartMixin {
             blue *= Mth.lerp(factor, 1.0F, ctx.blue);
         }
         
-        this.render(poseStack, vertexConsumer, light, overlay, red, green, blue, alpha);
+        part.render(poseStack, vertexConsumer, light, overlay, red, green, blue, alpha);
     }
 }
