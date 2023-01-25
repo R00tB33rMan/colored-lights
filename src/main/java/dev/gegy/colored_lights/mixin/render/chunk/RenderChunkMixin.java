@@ -5,6 +5,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import dev.gegy.colored_lights.ColoredLightCorner;
 import dev.gegy.colored_lights.ColoredLightPacking;
@@ -19,18 +20,19 @@ public class RenderChunkMixin implements ColoredLightBuiltChunk {
     private ColoredLightCorner[] chunkLightColors;
     private long packedChunkLightColors = 0;
     
-    @Inject(method = "clear", at = @At("HEAD"), require = 1)
+    @Inject(method = "reset", at = @At("HEAD"), require = 1)
     private void clear(CallbackInfo ci) {
         this.updateChunkLight(-1, null);
     }
     
-    @Inject(method = "cancelRebuild", at = @At("HEAD"), require = 1)
-    private void cancelRebuild(CallbackInfo ci) {
+    @Inject(method = "cancelTasks", at = @At("HEAD"), require = 1)
+    private void cancelRebuild(CallbackInfoReturnable<Boolean> ci) {
         var client = Minecraft.getInstance();
         var worldRenderer = (ColoredLightLevelRenderer) client.levelRenderer;
         var colorUpdater = worldRenderer.getChunkLightColorUpdater();
         
-        colorUpdater.updateChunk(client.level, (RenderChunk) (Object) this);
+        if (client.level != null)
+            colorUpdater.updateChunk(client.level, (RenderChunk) (Object) this);
     }
     
     @Override
