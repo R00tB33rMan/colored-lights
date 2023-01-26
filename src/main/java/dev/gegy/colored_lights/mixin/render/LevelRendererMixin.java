@@ -93,7 +93,8 @@ public class LevelRendererMixin implements ColoredLightLevelRenderer, ColoredLig
         ColoredLightEntityRenderContext.setGlobal(this.level.getStarBrightness(tickDelta));
     }
     
-    @Inject(method = "renderEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;render"),
+    @Inject(method = "renderEntity", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;render(Lnet/minecraft/world/entity/Entity;DDDFFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V"),
             locals = LocalCapture.CAPTURE_FAILHARD, require = 1)
     private void beforeRenderEntity(Entity entity, double x, double y, double z, float tickDelta, PoseStack poseStack, MultiBufferSource multiBufferSource, CallbackInfo ci, double entityX, double entityY, double entityZ, float entityYaw) {
         this.read(entityX, entityY, entityZ, ColoredLightEntityRenderContext::set);
