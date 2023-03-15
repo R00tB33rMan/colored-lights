@@ -47,7 +47,7 @@ public final class ChunkLightColorUpdater {
             return false;
         }
         
-        return ((ColoredLightBuiltChunk) builtChunk).isLightOutdated(section);
+        return ((ColoredLightRenderChunk) builtChunk).isLightOutdated(section);
     }
     
     @Nullable
@@ -70,7 +70,7 @@ public final class ChunkLightColorUpdater {
         var section = getChunkSection(world, x, y, z);
         int generation = section != null ? section.getColoredLightGeneration() : Integer.MIN_VALUE;
         
-        ((ColoredLightBuiltChunk) builtChunk).updateChunkLight(generation, isLightingColored(corners) ? corners : null);
+        ((ColoredLightRenderChunk) builtChunk).updateChunkLight(generation, isLightingColored(corners) ? corners : null);
     }
     
     private static boolean isLightingColored(ColoredLightCorner[] corners) {

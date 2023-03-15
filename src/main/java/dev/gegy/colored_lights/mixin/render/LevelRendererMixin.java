@@ -18,7 +18,7 @@ import dev.gegy.colored_lights.ColoredLights;
 import dev.gegy.colored_lights.mixin.render.chunk.ViewAreaAccess;
 import dev.gegy.colored_lights.render.ChunkLightColorUpdater;
 import dev.gegy.colored_lights.render.ColorConsumer;
-import dev.gegy.colored_lights.render.ColoredLightBuiltChunk;
+import dev.gegy.colored_lights.render.ColoredLightRenderChunk;
 import dev.gegy.colored_lights.render.ColoredLightEntityRenderContext;
 import dev.gegy.colored_lights.render.ColoredLightLevelRenderer;
 import dev.gegy.colored_lights.render.ColoredLightReader;
@@ -65,7 +65,7 @@ public class LevelRendererMixin implements ColoredLightLevelRenderer, ColoredLig
     private BlockPos prepareRenderChunk(RenderChunk chunk) {
         var chunkLightColors = this.chunkLightColors;
         if (chunkLightColors != null) {
-            long colors = ((ColoredLightBuiltChunk) chunk).getPackedChunkLightColors();
+            long colors = ((ColoredLightRenderChunk) chunk).getPackedChunkLightColors();
             if (this.lastChunkLightColors != colors) {
                 this.lastChunkLightColors = colors;
                 
@@ -113,7 +113,7 @@ public class LevelRendererMixin implements ColoredLightLevelRenderer, ColoredLig
             return;
         }
         
-        var corners = ((ColoredLightBuiltChunk) chunk).getChunkLightColors();
+        var corners = ((ColoredLightRenderChunk) chunk).getChunkLightColors();
         if (corners != null) {
             BlockPos origin = chunk.getOrigin();
             float localX = (float) (x - origin.getX()) / 16.0F;

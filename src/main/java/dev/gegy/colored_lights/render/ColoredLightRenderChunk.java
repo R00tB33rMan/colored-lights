@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import dev.gegy.colored_lights.ColoredLightCorner;
 import dev.gegy.colored_lights.chunk.ColoredLightChunkSection;
 
-public interface ColoredLightBuiltChunk {
+public interface ColoredLightRenderChunk {
     void updateChunkLight(int generation, @Nullable ColoredLightCorner[] corners);
     
     long getPackedChunkLightColors();

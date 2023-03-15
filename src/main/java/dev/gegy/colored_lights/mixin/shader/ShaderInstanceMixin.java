@@ -30,8 +30,7 @@ public abstract class ShaderInstanceMixin implements PatchedShader {
     
     private final Map<PatchedUniform, Uniform> patchedUniforms = new Reference2ObjectOpenHashMap<>();
     
-    @Inject(method = "<init>",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/resources/ResourceLocation;<init>(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"), require = 1)
+    @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/resources/ResourceLocation;<init>(Ljava/lang/String;)V"), require = 1)
     private void initEarly(ResourceProvider factory, String name, VertexFormat format, CallbackInfo ci) {
         ShaderPatchManager.startPatching(name);
     }

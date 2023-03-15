@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.client.renderer.LightTexture;
 
 public final class ColoredLightEntityRenderContext {
+    
     private static final ColoredLightEntityRenderContext INSTANCE = new ColoredLightEntityRenderContext();
     
     private boolean active;

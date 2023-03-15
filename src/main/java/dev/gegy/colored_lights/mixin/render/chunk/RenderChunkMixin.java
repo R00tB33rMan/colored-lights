@@ -2,6 +2,7 @@ package dev.gegy.colored_lights.mixin.render.chunk;
 
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -9,15 +10,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import dev.gegy.colored_lights.ColoredLightCorner;
 import dev.gegy.colored_lights.ColoredLightPacking;
-import dev.gegy.colored_lights.render.ColoredLightBuiltChunk;
 import dev.gegy.colored_lights.render.ColoredLightLevelRenderer;
+import dev.gegy.colored_lights.render.ColoredLightRenderChunk;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher.RenderChunk;
 
 @Mixin(RenderChunk.class)
-public class RenderChunkMixin implements ColoredLightBuiltChunk {
+public class RenderChunkMixin implements ColoredLightRenderChunk {
+    
+    @Unique
     private int chunkLightGeneration = -1;
+    @Unique
     private ColoredLightCorner[] chunkLightColors;
+    @Unique
     private long packedChunkLightColors = 0;
     
     @Inject(method = "reset", at = @At("HEAD"), require = 1)
